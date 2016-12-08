@@ -1,6 +1,6 @@
 {
-  "name": "sticky-listen",
-  "description": "Sticky listener based on Fedor Indutny's sticky-sessions",
+  "name": "least-latency-balancer",
+  "description": "Least-latency balancer for recluster",
   "version": "3.3.0",
   "author": "Gorgi Kosev <gorgi.kosev@gmail.com>",
   "main": "index.js",
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spion/sticky-session.git"
+    "url": "git+https://github.com/spion/least-latency-balancer.git"
   },
   "keywords": [
     "sticky",
@@ -29,7 +29,7 @@
     "balancer"
   ],
   "bugs": {
-    "url": "https://github.com/spion/sticky-session/issues"
+    "url": "https://github.com/spion/least-latency-balancer/issues"
   },
-  "homepage": "https://github.com/spion/sticky-session#readme"
+  "homepage": "https://github.com/spion/least-latency-balancer#readme"
 }

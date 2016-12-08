@@ -18,6 +18,9 @@ function listen(server) {
             }
             server.emit('connection', socket);
         }
+        else if (data.msg === 'sticky:ping') {
+            process.send(data)
+        }
     });
     server.emit('listening')
     return true;

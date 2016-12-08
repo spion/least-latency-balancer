@@ -1,23 +1,22 @@
-# sticky-listen
+# least-latency-balancer
 
-A simple performant way to use socket.io with [recluster][recluster], based on
-Fedor's sticky-session
+Least-latency balancer for recluster
 
 ## Installation
 
 ```bash
-npm install sticky-listen
+npm install least-latency-balancer
 ```
 
 ## Usage
 
-In your `cluster.js` that uses [recluster][recluster], use `sticky.createBalancer`
-to create a sticky balancing server.
+In your `cluster.js` that uses [recluster][recluster], use `llb.createBalancer`
+to create a LL balancing server.
 
 ```js
 var recluster = require('recluster'),
     path = require('path'),
-    sticky = require('sticky-listen')
+    llb = require('least-latency-balancer')
 
 var cluster = recluster(path.join(__dirname, 'server.js'), {
   readyWhen: 'ready'
@@ -32,34 +31,29 @@ process.on('SIGUSR2', function() {
 
 console.log("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");
 
-// Added for the sticky listener:
+// Added for the balancer:
 
-var balancer = sticky.createBalancer({
-  behindProxy: false,
+var balancer = llb.createBalancer({
   activeWorkers: cluster.activeWorkers,
-  maxRetries: 5,
-  retryDelay: 100
 });
 
 balancer.listen(8081, function() {
-  console.log("Sticky balancer listening on port", 8081);
+  console.log("Least latency balancer listening on port", 8081);
 });
 
 ```
 
-In your `server.js`, use `sticky.listen` instead of `server.listen` to start the server,
+In your `server.js`, use `llb.listen` instead of `server.listen` to start the server,
 then use `process.send({cmd: 'ready'})` to indicate that the worker is ready.
 
 ```javascript
-var sticky = require('sticky-listen');
+var llb = require('least-latency-balancer');
 
 var server = require('http').createServer(function(req, res) {
   res.end('worker: ' + process.env.NODE_WORKER_ID);
 });
 
-var io = require('socket.io').listen(server)
-
-sticky.listen(server)
+llb.listen(server)
 
 process.send({cmd: 'ready'})
 ```
@@ -78,14 +72,14 @@ needs to be passed `activeWorkers`, a function that returns a hash containing
 
 ## API
 
-### sticky.listen(server)
+### llb.listen(server)
 
 For use from the worker process
 
-Listens for sticky connections from a worker server. The port doesn't need
+Listens for connections from a worker server. The port doesn't need
 to be specified.
 
-### sticky.createBalancer(options)
+### llb.createBalancer(options)
 
 For use from the master process
 
@@ -94,50 +88,23 @@ Creates a new master balancer server that balances between worker servers.
 Returns a regular `net.Server`. Call server.listen(port) to start listening
 for connections and balancing those connections across the cluster.
 
-Sticky sessions are achieved based on the IP address of the client - requests
-from the same IP are redirected to the same worker index.
-
 The available options are
 
 ##### `activeWorkers`
 
 A function that returns a hash of the worker slots. For recluster based
-balancers that would be `cluster.activeWorkers`. The hash should contain:
+clusters that would be `cluster.activeWorkers`. The hash should contain:
 
 * a field `length`, the number of worker slots that serve requests
 * for every key `0..length`, a field that contains a [worker object][api-cluster-worker]
   of a worker that is capable of receiving new connections. If a worker isn't
   ready at that slot, the field should be `null`
 
-
-##### `retryDelay`
-
-If there are no worker available to serve the client, retry finding one after
-`retryDelay` miliseconds.
-
-##### `maxRetries`
-
-The number of retries to attempt before giving up and sending a 502 Bad Gateway
-error to the client.
-
-##### `behindProxy`
-
-If you use this option, sticky-listen will read the headers and look for
-the header specified in the `cipHeader` option (default `x-forwarded-for`) when reading
-the IP address of the client. This enables the balancer to work well even behind proxies
-such as HAProxy or nginx.
-
-##### `cipHeader`
-
-When `behindProxy` is `true`, it sets the header value that will contain the IP address
-of the client. It defaults to `"x-forwarded-for"`
-
 ## LICENSE
 
 This software is licensed under the MIT License.
 
-
-Copyright Fedor Indutny, 2015; Gorgi Kosev, 2015.
+Copyright Fedor Indutny, 2016; Gorgi Kosev, 2016.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
