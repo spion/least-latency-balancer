@@ -1,7 +1,7 @@
 {
   "name": "least-latency-balancer",
   "description": "Least-latency balancer for recluster",
-  "version": "1.0.0",
+  "version": "3.4.0",
   "author": "Gorgi Kosev <gorgi.kosev@gmail.com>",
   "main": "index.js",
   "engines": {
